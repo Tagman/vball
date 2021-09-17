@@ -1,6 +1,4 @@
-import numpy as np
 import cv2 as cv
-import os
 import ball_net as bn
 import blobber
 import sys
@@ -47,6 +45,8 @@ def test_clip(path):
         mask = cv.dilate(mask, None)
         mask = cv.GaussianBlur(mask, (15, 15), 0)
         ret, mask = cv.threshold(mask, 0, 255, cv.THRESH_BINARY | cv.THRESH_OTSU)
+        # print(f'mask after thresholding: {mask}')
+        # cv.imshow("threshold", mask)
         blobber.handle_blobs(mask, frame)
 
         blobber.draw_ball_path(frame)
