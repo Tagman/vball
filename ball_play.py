@@ -1,29 +1,6 @@
 import cv2 as cv
-import ball_net as bn
 import blobber
 import sys
-
-
-def draw_ball(mask, frame):
-    cnts, _ = cv.findContours(mask, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
-
-    k = 0
-    for c in cnts:
-        rx, ry, rw, rh = cv.boundingRect(c)
-        mn = min(rw, rh)
-        mx = max(rw, rh)
-        r = mx / mn
-        if mn < 10 or mx > 40 or r > 1.5:
-            continue
-
-        cut_m = mask[ry: ry + rh, rx: rx + rw]
-        cut_f = frame[ry: ry + rh, rx: rx + rw]
-
-        cut_c = cv.bitwise_and(cut_f, cut_f, mask=cut_m)
-        if bn.check_pic(cut_c) == 0:
-            ((x, y), r) = cv.minEnclosingCircle(c)
-            cv.circle(frame, (int(x), int(y)), int(r), (0, 255, 0), 3)
-
 
 def test_clip(path):
     vs = cv.VideoCapture(path)
