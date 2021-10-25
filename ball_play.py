@@ -6,6 +6,7 @@ def test_clip(path):
     vs = cv.VideoCapture(path)
     backSub = cv.createBackgroundSubtractorMOG2()
     n = 0
+    video_writer = cv.VideoWriter('traced.avi', cv.VideoWriter_fourcc(*'DIVX'), 30, (960, 540))
     while (True):
         ret, frame = vs.read()
         if not ret or frame is None:
@@ -28,11 +29,13 @@ def test_clip(path):
 
         blobber.draw_ball_path(frame)
         blobber.draw_ball(frame)
-        cv.imwrite("./frames/frame-{:03d}.jpg".format(n), frame)
+        # cv.imwrite("./frames/frame-{:03d}.jpg".format(n), frame)
         cv.imshow('frame', frame)
+        video_writer.write(frame)
         if cv.waitKey(10) == 27:
             break
         n += 1
+    video_writer.release()
     exit(0)
 
 
