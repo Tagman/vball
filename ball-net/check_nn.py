@@ -19,7 +19,7 @@ def handle_file(path):
 
 
 
-json_file = open('model.json', 'r')
+json_file = open('model/model.json', 'r')
 loaded_model_json = json_file.read()
 json_file.close()
 loaded_model = model_from_json(loaded_model_json)

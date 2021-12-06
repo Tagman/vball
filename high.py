@@ -79,5 +79,5 @@ def get_high_blobs(clip_path, out_path=None, clr_out_path=None):
 
 if __name__ == "__main__":
     # draw_high_cont(sys.argv[1])
-    get_high_blobs(sys.argv[1], sys.argv[2], sys.argv[2])
+    get_high_blobs(sys.argv[1], sys.argv[2], sys.argv[3])
     # get_high_blobs("D:/Videos/aus4.avi", "out", "clr")
