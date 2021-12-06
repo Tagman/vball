@@ -1,6 +1,6 @@
 frames
 resources
-train_masks
 train_color
-masks
+train_masks
 ball-net/train/**
+masks
