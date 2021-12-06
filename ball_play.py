@@ -5,8 +5,7 @@ import sys
 def test_clip(path):
     vs = cv.VideoCapture(path)
     backSub = cv.createBackgroundSubtractorMOG2()
-    n = 0
-    video_writer = cv.VideoWriter('traced.avi', cv.VideoWriter_fourcc(*'DIVX'), 30, (960, 540))
+    video_writer = cv.VideoWriter('traced.avi', cv.VideoWriter_fourcc(*'DIVX'), 30, (640, 340))
     while (True):
         ret, frame = vs.read()
         if not ret or frame is None:
@@ -34,7 +33,6 @@ def test_clip(path):
         video_writer.write(frame)
         if cv.waitKey(10) == 27:
             break
-        n += 1
     video_writer.release()
     exit(0)
 

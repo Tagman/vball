@@ -19,14 +19,10 @@ from keras.preprocessing.image import ImageDataGenerator
 size = 32
 
 def createModel(input_shape, cls_n ):
-    model = Sequential()
-
-    activation = "relu"
-
     model = Sequential([
-        Convolution2D(32,(3,3), activation='relu', input_shape=input_shape),
+        Convolution2D(32, (3, 3), activation='relu', input_shape=input_shape),
         MaxPooling2D(),
-        Convolution2D(64,(3,3), activation='relu'),
+        Convolution2D(64, (3, 3), activation='relu'),
         MaxPooling2D(),
         Flatten(),
         Dense(64, activation='relu'),
@@ -37,7 +33,6 @@ def createModel(input_shape, cls_n ):
     opt = SGD(lr=0.01)
     model.compile(loss="categorical_crossentropy", optimizer=opt, metrics=["accuracy"])
     return model
-
 
 
 input_shape = (size, size, 3)
@@ -53,7 +48,7 @@ training_set = train_datagen.flow_from_directory("train", color_mode="rgb", targ
 model.fit_generator(training_set, steps_per_epoch = 20, epochs = EPOCHS, validation_steps = 10)
 
 model_json = model.to_json()
-with open("./model.json","w") as json_file:
+with open("train/model.json", "w") as json_file:
   json_file.write(model_json)
 
-model.save_weights("./model.h5")
+model.save_weights("train/model.h5")
