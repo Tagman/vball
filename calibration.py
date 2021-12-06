@@ -12,12 +12,12 @@ def get_coordinates(event, x, y, flags, param):
 
 def get_vertices():
     real_vertices = []
-    real_img = cv2.imread('resources/court_real.JPG')
+    real_img = cv2.imread('resources/court-top-ball.png')
     cv2.namedWindow('real', cv2.WINDOW_NORMAL)
     cv2.setMouseCallback('real', get_coordinates, real_vertices)
 
     top_vertices = []
-    top_img = cv2.imread('resources/court-top.png')
+    top_img = cv2.imread('resources/perspective.png')
     cv2.namedWindow('top', cv2.WINDOW_NORMAL)
     cv2.setMouseCallback('top', get_coordinates, top_vertices)
 
@@ -36,11 +36,6 @@ def get_vertices():
 def get_transformation_matrix(real_vertices, top_vertices):
     primary = np.array(real_vertices)
     secondary = np.array(top_vertices)
-
-    secondary_1 = np.array([[610., 560., 0.],
-                          [610., -560., 0.],
-                          [390., -560., 0.],
-                          [390., 560., 0.]])
 
     # Pad the data with ones, so that our transformation can do translations too
     n = primary.shape[0]
@@ -64,6 +59,14 @@ def get_transformation_matrix(real_vertices, top_vertices):
     print(f'transformation-matrix with zeroes:\n{A}')
 
     print(f'Target:\n{secondary}')
+    # 7541, 447
+    ball_coord = np.array([[0., 0., 0.],
+                            [0., 447., 0.],
+                            [7541., 0., 0.],
+                            [7541., 447., 0.]])
+
+    ball_transf = transform(ball_coord)
+    print(f'ball_transformed: \n{ball_transf}')
     print(f'Result:\n{primary_transformed}')
     print(f'Max error:\n{max_error}')
 
@@ -73,6 +76,7 @@ if __name__ == "__main__":
     if get_actual_values == '1':
         real_vertices, top_vertices = get_vertices()
     else:
+
         # order is top-left, bottom-left, top-right, bottom-right
         real_vertices = [[1077., 2662., 0.], [142., 2870., 0.], [4409., 2676., 0.], [5378., 2870., 0.]]
         top_vertices = [[504., 363., 0.], [500., 4208., 0.], [7617., 363., 0.], [7617., 4204., 0.]]

@@ -146,53 +146,164 @@ def end_gen():
 
 def handle_blobs(mask, frame):
     contours, _ = cv.findContours(mask, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
-
+    # detect_blobs_in_mask(frame)
     begin_gen()
     for contour in contours:
         rectangle_origin_x, rectangle_origin_y, rectangle_width, rectangle_height = cv.boundingRect(contour)
-        rectangle_shorter_side = min(rectangle_width, rectangle_height)
-        rectangle_longer_side = max(rectangle_width, rectangle_height)
-        rectangle_ratio = rectangle_longer_side / rectangle_shorter_side
-        # if sides are too large or bounding rectangle of contour is not close to a 1:1 ratio, like for a ball
-        # then try the next one
-        if rectangle_shorter_side < 10 or rectangle_longer_side > 40 or rectangle_ratio > 1.5:
-            continue
+        # rectangle_shorter_side = min(rectangle_width, rectangle_height)
+        # rectangle_longer_side = max(rectangle_width, rectangle_height)
+        # rectangle_ratio = rectangle_longer_side / rectangle_shorter_side
 
         # cut the rectangle that is bounding the blob out of the mask
         cut_blob_from_mask = mask[
                              rectangle_origin_y: rectangle_origin_y + rectangle_height,
                              rectangle_origin_x: rectangle_origin_x + rectangle_width]
-        # cv.imshow("Cut-Blob", cut_blob)
-
-        is_blob, amount_of_non_zeroes = check_blob(cut_blob_from_mask, rectangle_width, rectangle_height)
-        cv.imshow('Mask', mask)
-        if not is_blob:
-            continue
-        probability_non_zeroes = amount_of_non_zeroes / (rectangle_width * rectangle_height)
-        # at least half of the pixels should be non-zeroes
-        if probability_non_zeroes < 0.5:
-            continue
 
         # cut the bounding rectangle from the frame
         cut_frame = frame[
                     rectangle_origin_y: rectangle_origin_y + rectangle_height,
                     rectangle_origin_x: rectangle_origin_x + rectangle_width]
+
+
+        # if sides are too large or bounding rectangle of contour is not close to a 1:1 ratio, like for a ball
+        # then try the next one
+
+
+        # if rectangle_shorter_side < 10 or rectangle_longer_side > 40 or rectangle_ratio > 1.5:
+        #     continue
+        #
+        # is_blob, amount_of_non_zeroes = check_blob(cut_blob_from_mask, rectangle_width, rectangle_height)
+        # # cv.imshow('Mask', mask)
+        # if not is_blob:
+        #     continue
+        # probability_non_zeroes = amount_of_non_zeroes / (rectangle_width * rectangle_height)
+        # # at least half of the pixels should be non-zeroes
+        # if probability_non_zeroes < 0.5:
+        #     continue
+        # cv.imshow("Cut-Blob", cut_blob_from_mask)
+        # cv.imshow("Cut-Frame", cut_frame)
+
+        if not check_stuff(cut_blob_from_mask, rectangle_height, rectangle_width):
+            # cv.imshow("Cut-Blob", cut_blob_from_mask)
+            # cv.imshow("Cut-Frame", cut_frame)
+            # print("blob filtered out")
+            # cv.waitKey(0)
+            destroy_blobber_windows()
+            continue
+
+
+
+
+
+
         # cv.imshow("Cut-Frame", cut_frame)
 
         # why is this done here, whats the benefit?
         # so only the real detected blob is there not the noise from cutting?
         cut_c = cv.bitwise_and(cut_frame, cut_frame, mask=cut_blob_from_mask)
         # cv.imshow("Cut-C", cut_c)
+        # cv.imshow("Cut-Blob", cut_blob_from_mask)
+        # cv.imshow("Cut-Frame", cut_frame)
+        # print("blob was allowed")
+        # cv.waitKey(0)
 
         # is the blob a ball? Decided by the NN
-        if bn.check_pic(cut_c) != 0:
-            continue
-        # get data (coordinates) for the enclosing circle of the detected ball
+        # prediction = bn.check_pic(cut_c)
+        # if prediction <= 0.5:
+        #     # cv.destroyWindow("Cut-Blob")
+        #     # cv.destroyWindow("Cut-Frame")
+        #     # cv.destroyWindow("Cut-C")
+        #     print(f'no-ball: {prediction}')
+        #     continue
+        # print(f'ball: {prediction}')
+
+        # polys = get_polygon_curve_vertices(contour)
+        # print(f'number of polys: {polys}')
+        # # if polys < 8 or polys > 13:
+        # if polys < 10:
+        #     print('no circle')
+        #     continue
+        # print('circle')
+        #
+        # if not is_contour_a_circle(contour):
+        #     continue
+
+    # get data (coordinates) for the enclosing circle of the detected ball
+    #     cv.destroyWindow("Cut-Blob")
+    #     cv.destroyWindow("Cut-Frame")
+    #     cv.destroyWindow("Cut-C")
+        destroy_blobber_windows()
         ((x, y), radius) = cv.minEnclosingCircle(contour)
         # find out if the blob is directed with a previous blob and also add it to blob list
         handle_blob(int(x), int(y), int(radius))
 
     end_gen()
+
+def get_polygon_curve_vertices(contour):
+    arc_length = cv.arcLength(contour, True)
+    print(f'arc {arc_length}')
+    # approx = cv.approxPolyDP(contour, 0.5, True)
+    approx = cv.approxPolyDP(contour, 0.01 * cv.arcLength(contour, True), True)
+    polys = len(approx)
+    return polys
+
+def destroy_blobber_windows():
+    if cv.getWindowProperty("Cut-Blob", cv.WND_PROP_VISIBLE) == 1.0:
+        cv.destroyWindow("Cut-Blob")
+
+    if cv.getWindowProperty("Cut-Frame", cv.WND_PROP_VISIBLE) == 1.0:
+        cv.destroyWindow("Cut-Frame")
+
+    if cv.getWindowProperty("Cut-C", cv.WND_PROP_VISIBLE) == 1.0:
+        cv.destroyWindow("Cut-C")
+
+
+
+def check_stuff(blob, bounding_rect_height, bounding_rect_width):
+    rectangle_shorter_side = min(bounding_rect_width, bounding_rect_height)
+    rectangle_longer_side = max(bounding_rect_width, bounding_rect_height)
+    rectangle_ratio = rectangle_longer_side / rectangle_shorter_side
+    print(f'ratio: {rectangle_ratio}, short: {rectangle_shorter_side}, long: {rectangle_longer_side}')
+
+    if rectangle_shorter_side < 5 or rectangle_longer_side > 13 or rectangle_ratio > 1.5:
+        print("blob sizes are wrong")
+        # print(f'ratio: {rectangle_ratio}, short: {rectangle_shorter_side}, long: {rectangle_longer_side}')
+        return False
+
+    is_blob, amount_of_non_zeroes = check_blob(blob, bounding_rect_width, bounding_rect_height)
+    # cv.imshow('Mask', mask)
+    # if not is_blob:
+    #     print("blob to many zeroes")
+    #     return False
+
+    probability_non_zeroes = amount_of_non_zeroes / (bounding_rect_width * bounding_rect_height)
+    # at least half of the pixels should be non-zeroes
+    if probability_non_zeroes < 0.5:
+        print("blob to few non-zeroes")
+        return False
+
+    return True
+
+
+def is_contour_a_circle(contour):
+    area = cv.contourArea(contour)
+    print(f'contour area: {area}')
+    perimeter = cv.arcLength(contour, True)
+    circularity = 4*math.pi*(area/(perimeter*perimeter))
+    print(f'circularity: {circularity}')
+    return circularity >= 0.85
+
+def detect_blobs_in_mask(mask):
+    detector = cv.SimpleBlobDetector_create()
+    # Detect blobs.
+    keypoints = detector.detect(mask)
+    # Draw detected blobs as red circles.
+    # cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS ensures the size of the circle corresponds to the size of blob
+    im_with_keypoints = cv.drawKeypoints(mask, keypoints, np.array([]), (0, 0, 255), cv.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+    # Show keypoints
+    cv.imshow("Keypoints", im_with_keypoints)
+    # cv.waitKey(0)
+
 
 
 def check_blob(blob, width, height):
@@ -261,7 +372,7 @@ def draw_ball_path(pic):
                 intersection_y = intersection[1]
 
                 if (intersection_y < float('inf')) and all(i <= intersection_y for i in y_coordinates):
-                    print(f'lowest point found: {intersection}')
+                    # print(f'lowest point found: {intersection}')
                     cv.circle(pic, (intersection[0], intersection_y), 3, (0, 0, 255), -1)
             cv.circle(pic, (point_to_draw[0], point_to_draw[1]), 3, (150, 150, 150), -1)
 
