@@ -1,19 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="a3f486fa-3ff4-44c1-a7fd-a07906293cad" name="Changes" comment="chore(setup): cleanup">
+    <list default="true" id="a3f486fa-3ff4-44c1-a7fd-a07906293cad" name="Changes" comment="feat(ignore): add data dirs to ignore">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ball-net/check_nn.py" beforeDir="false" afterPath="$PROJECT_DIR$/ball-net/check_nn.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ball-net/model/model.h5" beforeDir="false" afterPath="$PROJECT_DIR$/ball-net/model/model_austria.h5" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ball-net/model/model.json" beforeDir="false" afterPath="$PROJECT_DIR$/ball-net/model/model_austria.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ball-net/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/ball-net/train.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ball_net.py" beforeDir="false" afterPath="$PROJECT_DIR$/ball_net.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ball_play.py" beforeDir="false" afterPath="$PROJECT_DIR$/ball_play.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/blobber.py" beforeDir="false" afterPath="$PROJECT_DIR$/blobber.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/calibration.py" beforeDir="false" afterPath="$PROJECT_DIR$/calibration.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/high.py" beforeDir="false" afterPath="$PROJECT_DIR$/high.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/traced.avi" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vball.iml" beforeDir="false" afterPath="$PROJECT_DIR$/vball.iml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -75,7 +66,7 @@
       <recent name="F:\Uni\MA\coding\vball\ball-net\model" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.vball_main debug_video">
+  <component name="RunManager" selected="Python.image_batch_prediction">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -223,6 +214,28 @@
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/high.py" />
       <option name="PARAMETERS" value="F:\Uni\MA\sources\videos\friday\MVI_9708.MOV train_masks train_color" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="image_batch_prediction" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="vball" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/image_batch_prediction.py" />
+      <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -416,9 +429,11 @@
       <item itemvalue="Python.scratch_3" />
       <item itemvalue="Python.scratch_4" />
       <item itemvalue="Python.calibration" />
+      <item itemvalue="Python.image_batch_prediction" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.image_batch_prediction" />
         <item itemvalue="Python.calibration" />
         <item itemvalue="Python.scratch_4" />
         <item itemvalue="Python.scratch_3" />
@@ -539,6 +554,13 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/scripts/image_batch_prediction.py</url>
+          <line>62</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+      </breakpoints>
       <default-breakpoints>
         <breakpoint type="python-exception">
           <properties notifyOnTerminate="true" exception="BaseException">
@@ -553,16 +575,17 @@
     <select />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/vball$high.coverage" NAME="high Coverage Results" MODIFIED="1636381298256" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/vball$scratch_4.coverage" NAME="scratch_4 Coverage Results" MODIFIED="1633012648607" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
+    <SUITE FILE_PATH="coverage/vball$scratch_3.coverage" NAME="scratch_3 Coverage Results" MODIFIED="1631881185688" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
+    <SUITE FILE_PATH="coverage/vball$image_batch_prediction.coverage" NAME="image_batch_prediction Coverage Results" MODIFIED="1638795512126" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
     <SUITE FILE_PATH="coverage/vball$vball_main.coverage" NAME="vball_main video Coverage Results" MODIFIED="1635254165613" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/vball$vball_main_video.coverage" NAME="vball_main video Coverage Results" MODIFIED="1638291056185" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/vball$calibration.coverage" NAME="calibration Coverage Results" MODIFIED="1635754222282" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/vball$high.coverage" NAME="high Coverage Results" MODIFIED="1636381298256" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/vball$scratch_4.coverage" NAME="scratch_4 Coverage Results" MODIFIED="1633012648607" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
     <SUITE FILE_PATH="coverage/vball$vball_main_debug_video.coverage" NAME="vball_main debug_video Coverage Results" MODIFIED="1638291376835" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/vball$ball_play_video.coverage" NAME="ball_play video Coverage Results" MODIFIED="1636649917870" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/vball$ball_play_rtsp.coverage" NAME="ball_play rtsp Coverage Results" MODIFIED="1635250092956" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/vball$vball_main_rtsp.coverage" NAME="vball_main rtsp Coverage Results" MODIFIED="1635254307763" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/vball$scratch_3.coverage" NAME="scratch_3 Coverage Results" MODIFIED="1631881185688" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
     <SUITE FILE_PATH="coverage/vball$ball_play.coverage" NAME="ball_play Coverage Results" MODIFIED="1633008360155" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/vball$vball_main_image_debug.coverage" NAME="vball_main image_debug Coverage Results" MODIFIED="1636216164901" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
