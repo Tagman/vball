@@ -3,7 +3,7 @@ from typing import Union
 
 import cv2 as cv
 import numpy as np
-import ball_net as bn
+# import ball_net as bn
 import sys
 
 count = 0
