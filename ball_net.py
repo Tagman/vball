@@ -1,11 +1,7 @@
-import sys
 import numpy as np
 import cv2 as cv
-import os
 
-from keras.models import load_model
 from keras.models import model_from_json
-from keras.preprocessing.image import img_to_array
 
 size = 32
 dim = 3

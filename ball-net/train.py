@@ -45,7 +45,7 @@ model = createModel(input_shape, cls_n)
 train_datagen = ImageDataGenerator(rescale = 1./255)
 
 training_set = train_datagen.flow_from_directory("train", color_mode="rgb", target_size = (size, size), batch_size = 32, class_mode = 'categorical')
-model.fit_generator(training_set, steps_per_epoch = 20, epochs = EPOCHS, validation_steps = 10)
+model.fit(training_set, steps_per_epoch = 20, epochs = EPOCHS, validation_steps = 10)
 
 model_json = model.to_json()
 with open("train/model.json", "w") as json_file:
