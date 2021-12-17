@@ -7,7 +7,6 @@ import numpy as np
 import sys
 
 count = 0
-
 R = 60
 EPS = 1e-6
 EPS2 = 0.5
@@ -17,46 +16,53 @@ STATUS_STATIC = 1
 STATUS_DIRECTED = 2
 
 
-def pt_dist(x1, y1, x2, y2):
-    dx = x1 - x2
-    dy = y1 - y2
-    return math.sqrt(dx * dx + dy * dy)
+class Point:
+
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def get_coordinates_as_array(self):
+        return [self.x, self.y]
 
 
 class Blob:
     count = 1
 
-    def __init__(self, x, y, radius, age):
+    def __init__(self, point, radius, age):
         self.id = Blob.count
         Blob.count += 1
-        self.points = [[x, y]]
+        self.points = [point]
         self.point_properties = [[radius, age]]
         self.status = STATUS_INIT
         self.age = age
         self.nx = None
         self.ny = None
 
-    def fit(self, x, y):
+    def fit(self, point):
         # get the distance from the last added point (x and y) to another Point x and y
-        d = pt_dist(self.points[-1][0], self.points[-1][1], x, y)
+        last_added_point = self.points[-1]
+        d = pt_dist(last_added_point, point)
         return d < R, d
 
-    def add(self, x, y, r, a):
-        self.points.append([x, y])
+    def add(self, point, r, a):
+        self.points.append(point)
         self.point_properties.append([r, a])
         self.age = a
         if len(self.points) > 2:
             # if self.status == STATUS_DIRECTED and self.nx is not None:
             #  print("Predict", self.nx, self.ny, "vs", x, y)
 
-            dx1 = self.points[-2][0] - self.points[-3][0]
-            dy1 = self.points[-2][1] - self.points[-3][1]
+            second_last_point = self.points[-2]
+            third_last_point = self.points[-3]
+            dx1 = second_last_point.x - third_last_point.x
+            dy1 = second_last_point.y - third_last_point.y
 
-            dx2 = x - self.points[-2][0]
-            dy2 = y - self.points[-2][1]
+            dx2 = point.x - second_last_point.x
+            dy2 = point.y - second_last_point.y
 
-            d1 = pt_dist(self.points[-2][0], self.points[-2][1], x, y)
-            d2 = pt_dist(self.points[-2][0], self.points[-2][1], self.points[-3][0], self.points[-3][1])
+            d1 = pt_dist(second_last_point, point)
+            d2 = pt_dist(second_last_point, third_last_point)
             if dx1 * dx2 > 0 and dy1 * dy2 > 0 and d1 > 5 and d2 > 5:
                 self.status = STATUS_DIRECTED
                 # print("Directed", self.pts)
@@ -65,7 +71,8 @@ class Blob:
                 self.status = STATUS_STATIC
 
     def predict(self):
-        npts = np.array(self.points)
+        coordinate_array = map(lambda pt: pt.get_coordinates_as_array(), self.points)
+        npts = np.array(list(coordinate_array))
         l = len(self.points) + 1
         idx = np.array(range(1, l))
 
@@ -80,50 +87,58 @@ class Blob:
         return self.nx, self.ny
 
 
-Blobs = []
+existing_blobs = []
 ball_blob: Union[Blob, None] = None
 prev_ball_blob: Union[Blob, None] = None
+
+
+def pt_dist(point, other_point):
+    dx = point.x - other_point.x
+    dy = point.y - other_point.y
+    return math.sqrt(dx * dx + dy * dy)
 
 
 def get_ball_blob():
     return ball_blob
 
 
-def find_closest_existing_blob(center_x, center_y):
-    global Blobs, count
-    rbp = []
-    sbp = []
+def find_closest_blob_to_point(point):
+    global existing_blobs, count
+    related_blobs = []
+    static_blobs = []
 
-    for blob in Blobs:
+    for blob in existing_blobs:
         # its fitting if the distance is below 60 (why 60?)
-        fit, distance = blob.fit(center_x, center_y)
+        fit, distance = blob.fit(point)
         if fit:
-            # new blob is not longer than 4 blobs away
+            # new blob is not older than 4 blobs
             if count - blob.age < 4:
-                rbp.append([blob, distance])
+                related_blobs.append([blob, distance])
             elif blob.status == STATUS_STATIC:
-                sbp.append([blob, distance])
+                static_blobs.append([blob, distance])
 
-    if len(sbp) + len(rbp) == 0:
+    if len(static_blobs) + len(related_blobs) == 0:
         return None
-    if len(rbp) > 0:
+    if len(related_blobs) > 0:
         # sort by distance
-        rbp.sort(key=lambda e: e[1])
+        related_blobs.sort(key=lambda e: e[1])
         # return blob with the lowest distance
-        return rbp[0][0]
+        return related_blobs[0][0]
     else:
         # sort by distance
-        sbp.sort(key=lambda e: e[1])
-        return sbp[0][0]
+        static_blobs.sort(key=lambda e: e[1])
+        return static_blobs[0][0]
 
 
 def handle_blob(center_x, center_y, radius):
-    global Blobs, count, ball_blob
-    blob = find_closest_existing_blob(center_x, center_y)
+    global existing_blobs, count, ball_blob
+    point = Point(center_x, center_y)
+    blob = find_closest_blob_to_point(point)
     if blob is None:
-        Blobs.append(Blob(center_x, center_y, radius, count))
+        existing_blobs.append(
+            Blob(point, radius, count))
         return
-    blob.add(center_x, center_y, radius, count)
+    blob.add(point, radius, count)
     if blob.status == STATUS_DIRECTED:
         if not ball_blob:
             ball_blob = blob
@@ -344,7 +359,8 @@ def check_blob(blob, width, height):
 def draw_ball(pic):
     ball = get_ball_blob()
     if ball is not None:
-        cv.circle(pic, (ball.points[-1][0], ball.points[-1][1]), 10, (0, 200, 0), 3)
+        last_point_of_ball = ball.points[-1]
+        cv.circle(pic, (last_point_of_ball.x, last_point_of_ball.y), 10, (0, 200, 0), 3)
     else:
         if prev_ball_blob is not None:
             x, y = prev_ball_blob.predict()
@@ -367,16 +383,21 @@ def draw_ball_path(pic):
             # next_two_points = list(itertools.islice(points_iterator, 2))
             if len(next_four_points) == 4:
                 intersection = get_intersect(next_four_points[0], next_four_points[1], next_four_points[2], next_four_points[3])
-                y_coordinates = map(lambda point: point[1], next_four_points)
+                y_coordinates = map(lambda point: point.y, next_four_points)
                 intersection_y = intersection[1]
 
                 if (intersection_y < float('inf')) and all(i <= intersection_y for i in y_coordinates):
                     # print(f'lowest point found: {intersection}')
                     cv.circle(pic, (intersection[0], intersection_y), 3, (0, 0, 255), -1)
-            cv.circle(pic, (point_to_draw[0], point_to_draw[1]), 3, (150, 150, 150), -1)
+            cv.circle(pic, (point_to_draw.x, point_to_draw.y), 3, (150, 150, 150), -1)
 
 
-def get_intersect(a1, a2, b1, b2):
+def get_intersect(pt_a1, pt_a2, pt_b1, pt_b2):
+    coord_a1 = pt_a1.get_coordinates_as_array()
+    coord_a2 = pt_a2.get_coordinates_as_array()
+    coord_b1 = pt_b1.get_coordinates_as_array()
+    coord_b2 = pt_b2.get_coordinates_as_array()
+
     """
     Returns the point of intersection of the lines passing through a2,a1 and b2,b1.
     a1: [x, y] a point on the first line
@@ -384,7 +405,8 @@ def get_intersect(a1, a2, b1, b2):
     b1: [x, y] a point on the second line
     b2: [x, y] another point on the second line
     """
-    s = np.vstack([a1,a2,b1,b2])        # s for stacked
+
+    s = np.vstack([coord_a1, coord_a2, coord_b1, coord_b2])        # s for stacked
     h = np.hstack((s, np.ones((4, 1)))) # h for homogeneous
     l1 = np.cross(h[0], h[1])           # get first line
     l2 = np.cross(h[2], h[3])           # get second line
@@ -396,7 +418,7 @@ def get_intersect(a1, a2, b1, b2):
 
 def draw_blobs(w, h):
     pic = np.zeros((h, w, 3), np.uint8)
-    for b in Blobs:
+    for b in existing_blobs:
         clr = (200, 200, 200)
         if b.status == STATUS_STATIC:
             clr = (0, 200, 0)
