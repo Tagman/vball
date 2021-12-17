@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="a3f486fa-3ff4-44c1-a7fd-a07906293cad" name="Changes" comment="chore(setup): ignore resource folder">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="a3f486fa-3ff4-44c1-a7fd-a07906293cad" name="Changes" comment="chore(setup): linux try out">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/blobber.py" beforeDir="false" afterPath="$PROJECT_DIR$/blobber.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,7 +54,7 @@
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File" value="Python" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/high.py" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="project.structure.last.edited" value="SDKs" />
     <property name="project.structure.proportion" value="0.15" />
@@ -64,6 +64,7 @@
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/resources/mapping" />
       <recent name="F:\Uni\MA\coding\vball\ball-net\model" />
     </key>
   </component>
@@ -478,6 +479,9 @@
       <workItem from="1638364783086" duration="6000" />
       <workItem from="1638784566534" duration="338000" />
       <workItem from="1639666528909" duration="480000" />
+      <workItem from="1639667235401" duration="1700000" />
+      <workItem from="1639734106603" duration="28000" />
+      <workItem from="1639734166824" duration="1241000" />
     </task>
     <task id="LOCAL-00001" summary="feat(code-improvement): starting to clear up code so its easier to understand">
       <created>1631795130810</created>
@@ -528,7 +532,14 @@
       <option name="project" value="LOCAL" />
       <updated>1635164252312</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="chore(setup): linux try out">
+      <created>1639667453322</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1639667453322</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -552,7 +563,8 @@
     <MESSAGE value="feat(code-improvement): add python script that can be used to calibrate on a real life and top view picture" />
     <MESSAGE value="chore(setup): ignore resource folder" />
     <MESSAGE value="chore(setup): cleanup" />
-    <option name="LAST_COMMIT_MESSAGE" value="chore(setup): cleanup" />
+    <MESSAGE value="chore(setup): linux try out" />
+    <option name="LAST_COMMIT_MESSAGE" value="chore(setup): linux try out" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -589,6 +601,6 @@
     <SUITE FILE_PATH="coverage/vball$scratch_4.coverage" NAME="scratch_4 Coverage Results" MODIFIED="1633012648607" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
     <SUITE FILE_PATH="coverage/vball$vball_main_debug_video.coverage" NAME="vball_main debug_video Coverage Results" MODIFIED="1638291376835" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/vball$ball_play_rtsp.coverage" NAME="ball_play rtsp Coverage Results" MODIFIED="1633012898981" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/vball$vball_main_video.coverage" NAME="vball_main video Coverage Results" MODIFIED="1638291056185" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/vball$vball_main_video.coverage" NAME="vball_main video Coverage Results" MODIFIED="1639667389277" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
