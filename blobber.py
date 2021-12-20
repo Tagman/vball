@@ -3,7 +3,7 @@ from typing import Union
 
 import cv2 as cv
 import numpy as np
-import ball_net as bn
+# import ball_net as bn
 import sys
 
 count = 0
@@ -30,9 +30,8 @@ class Blob:
         self.id = Blob.count
         Blob.count += 1
         self.points = [[x, y]]
-        self.pp = [[radius, age]]
+        self.point_properties = [[radius, age]]
         self.status = STATUS_INIT
-        self.v = None
         self.age = age
         self.nx = None
         self.ny = None
@@ -44,7 +43,7 @@ class Blob:
 
     def add(self, x, y, r, a):
         self.points.append([x, y])
-        self.pp.append([r, a])
+        self.point_properties.append([r, a])
         self.age = a
         if len(self.points) > 2:
             # if self.status == STATUS_DIRECTED and self.nx is not None:
@@ -403,8 +402,8 @@ def draw_blobs(w, h):
             clr = (0, 200, 0)
         elif b.status == STATUS_DIRECTED:
             clr = (200, 0, 0)
-            if not b.v is None:
-                cv.line(pic, (b.points[0][0], b.points[0][1]), (b.points[-1][0], b.points[-1][1]), (255, 0, 0), 1)
+            # if b.v is not None:
+            #     cv.line(pic, (b.points[0][0], b.points[0][1]), (b.points[-1][0], b.points[-1][1]), (255, 0, 0), 1)
         for p in b.points:
             cv.circle(pic, (p[0], p[1]), 3, clr, -1)
 
