@@ -164,9 +164,6 @@ def handle_blobs(mask, frame):
     begin_gen()
     for contour in contours:
         rectangle_origin_x, rectangle_origin_y, rectangle_width, rectangle_height = cv.boundingRect(contour)
-        # rectangle_shorter_side = min(rectangle_width, rectangle_height)
-        # rectangle_longer_side = max(rectangle_width, rectangle_height)
-        # rectangle_ratio = rectangle_longer_side / rectangle_shorter_side
 
         # cut the rectangle that is bounding the blob out of the mask
         cut_blob_from_mask = mask[
@@ -178,38 +175,16 @@ def handle_blobs(mask, frame):
                     rectangle_origin_y: rectangle_origin_y + rectangle_height,
                     rectangle_origin_x: rectangle_origin_x + rectangle_width]
 
-
-        # if sides are too large or bounding rectangle of contour is not close to a 1:1 ratio, like for a ball
-        # then try the next one
-
-
-        # if rectangle_shorter_side < 10 or rectangle_longer_side > 40 or rectangle_ratio > 1.5:
-        #     continue
-        #
-        # is_blob, amount_of_non_zeroes = check_blob(cut_blob_from_mask, rectangle_width, rectangle_height)
-        # # cv.imshow('Mask', mask)
-        # if not is_blob:
-        #     continue
-        # probability_non_zeroes = amount_of_non_zeroes / (rectangle_width * rectangle_height)
-        # # at least half of the pixels should be non-zeroes
-        # if probability_non_zeroes < 0.5:
-        #     continue
         # cv.imshow("Cut-Blob", cut_blob_from_mask)
         # cv.imshow("Cut-Frame", cut_frame)
 
-        if not check_stuff(cut_blob_from_mask, rectangle_height, rectangle_width):
+        if not is_valid_ball(cut_blob_from_mask, rectangle_height, rectangle_width):
             # cv.imshow("Cut-Blob", cut_blob_from_mask)
             # cv.imshow("Cut-Frame", cut_frame)
             # print("blob filtered out")
             # cv.waitKey(0)
             destroy_blobber_windows()
             continue
-
-
-
-
-
-
         # cv.imshow("Cut-Frame", cut_frame)
 
         # why is this done here, whats the benefit?
@@ -221,37 +196,17 @@ def handle_blobs(mask, frame):
         # print("blob was allowed")
         # cv.waitKey(0)
 
-        # is the blob a ball? Decided by the NN
-        # prediction = bn.check_pic(cut_c)
-        # if prediction <= 0.5:
-        #     # cv.destroyWindow("Cut-Blob")
-        #     # cv.destroyWindow("Cut-Frame")
-        #     # cv.destroyWindow("Cut-C")
-        #     print(f'no-ball: {prediction}')
-        #     continue
-        # print(f'ball: {prediction}')
 
-        # polys = get_polygon_curve_vertices(contour)
-        # print(f'number of polys: {polys}')
-        # # if polys < 8 or polys > 13:
-        # if polys < 10:
-        #     print('no circle')
-        #     continue
-        # print('circle')
-        #
-        # if not is_contour_a_circle(contour):
-        #     continue
 
-    # get data (coordinates) for the enclosing circle of the detected ball
-    #     cv.destroyWindow("Cut-Blob")
-    #     cv.destroyWindow("Cut-Frame")
-    #     cv.destroyWindow("Cut-C")
+        # get data (coordinates) for the enclosing circle of the detected ball
         destroy_blobber_windows()
         ((x, y), radius) = cv.minEnclosingCircle(contour)
+
         # find out if the blob is directed with a previous blob and also add it to blob list
         handle_blob(int(x), int(y), int(radius))
 
     end_gen()
+
 
 def get_polygon_curve_vertices(contour):
     arc_length = cv.arcLength(contour, True)
@@ -260,6 +215,7 @@ def get_polygon_curve_vertices(contour):
     approx = cv.approxPolyDP(contour, 0.01 * cv.arcLength(contour, True), True)
     polys = len(approx)
     return polys
+
 
 def destroy_blobber_windows():
     if cv.getWindowProperty("Cut-Blob", cv.WND_PROP_VISIBLE) == 1.0:
@@ -272,13 +228,13 @@ def destroy_blobber_windows():
         cv.destroyWindow("Cut-C")
 
 
-
-def check_stuff(blob, bounding_rect_height, bounding_rect_width):
+def is_valid_ball(blob, bounding_rect_height, bounding_rect_width):
     rectangle_shorter_side = min(bounding_rect_width, bounding_rect_height)
     rectangle_longer_side = max(bounding_rect_width, bounding_rect_height)
     rectangle_ratio = rectangle_longer_side / rectangle_shorter_side
     print(f'ratio: {rectangle_ratio}, short: {rectangle_shorter_side}, long: {rectangle_longer_side}')
 
+    # actual ball sides are around 7-10
     if rectangle_shorter_side < 5 or rectangle_longer_side > 13 or rectangle_ratio > 1.5:
         print("blob sizes are wrong")
         # print(f'ratio: {rectangle_ratio}, short: {rectangle_shorter_side}, long: {rectangle_longer_side}')
@@ -295,6 +251,30 @@ def check_stuff(blob, bounding_rect_height, bounding_rect_width):
     if probability_non_zeroes < 0.5:
         print("blob to few non-zeroes")
         return False
+
+    # additional checks
+    # is the blob a ball? Decided by the NN
+    # prediction = bn.check_pic(cut_c)
+    # if prediction <= 0.5:
+    #     # cv.destroyWindow("Cut-Blob")
+    #     # cv.destroyWindow("Cut-Frame")
+    #     # cv.destroyWindow("Cut-C")
+    #     print(f'no-ball: {prediction}')
+    #     continue
+    # print(f'ball: {prediction}')
+
+    # count polygons
+    # polys = get_polygon_curve_vertices(contour)
+    # print(f'number of polys: {polys}')
+    # # if polys < 8 or polys > 13:
+    # if polys < 10:
+    #     print('no circle')
+    #     continue
+    # print('circle')
+    #
+    # calculate properties of circle
+    # if not is_contour_a_circle(contour):
+    #     continue
 
     return True
 
