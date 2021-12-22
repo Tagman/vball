@@ -82,7 +82,7 @@ def preprocess_frame(frame, back_sub):
 
     # dilates using kernel with a default 3x3 matrix
     #     https://docs.opencv.org/4.5.1/db/df6/tutorial_erosion_dilatation.html
-    dilated = cv2.dilate(opened, None)
+    dilated = cv2.dilate(opened, None, iterations=1)
     # cv2.imshow('dilate', dilated)
     blurred = cv2.GaussianBlur(dilated, (15, 15), 0)
     # cv2.imshow('blur', blurred)
