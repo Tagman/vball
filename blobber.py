@@ -136,6 +136,8 @@ def find_closest_blob_to_point(point) -> Union[Blob, None]:
 
 def handle_blob(center_x, center_y):
     global existing_blobs, count, ball_blob
+    # TODO all points of a ball blob need to go into the same x-direction
+    # this should limit some weird tracking and make
     point = Point(center_x, center_y)
     blob = find_closest_blob_to_point(point)
     if blob is None:
@@ -365,6 +367,7 @@ def draw_ball(pic):
 found_points = []
 def draw_ball_path(pic):
     ball = get_ball_blob()
+    # TODO cut out flight curve with wrong red dots in curve and debug this
     # try detection with vectors and their direction (so 4 points)
     if ball is not None:
         # points_iterator = iter(ball.points)
@@ -376,15 +379,14 @@ def draw_ball_path(pic):
             # print(f'current point: {point_to_draw}')
             # print(f'next four points {next_four_points}')
             # next_two_points = list(itertools.islice(points_iterator, 2))
-            if len(next_four_points) == 4:
-                intersection = get_intersect(next_four_points[0], next_four_points[1], next_four_points[2], next_four_points[3])
-                y_coordinates = map(lambda point: point.y, next_four_points)
-                intersection_y = intersection[1]
-
-                if (intersection_y < float('inf')) and all(i <= intersection_y for i in y_coordinates):
-                    # print(f'lowest point found: {intersection}')
-                    cv.circle(pic, (intersection[0], intersection_y), 3, (0, 0, 255), -1)
             cv.circle(pic, (point_to_draw.x, point_to_draw.y), 3, (150, 150, 150), -1)
+            if len(next_four_points) == 4:
+                intersect_x, intersect_y = get_intersect(next_four_points[0], next_four_points[1], next_four_points[2], next_four_points[3])
+                y_coordinates = map(lambda point: point.y, next_four_points)
+
+                if (intersect_y < float('inf')) and all(y <= intersect_y for y in y_coordinates):
+                    # print(f'lowest point found: {intersection}')
+                    cv.circle(pic, (intersect_x, intersect_y), 3, (0, 0, 255), -1)
 
 
 def get_intersect(pt_a1, pt_a2, pt_b1, pt_b2):
