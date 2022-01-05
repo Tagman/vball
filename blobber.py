@@ -1,4 +1,5 @@
 import math
+from enum import Enum
 from typing import Union
 
 import cv2 as cv
@@ -7,65 +8,84 @@ import numpy as np
 import sys
 
 count = 0
-
-R = 60
 EPS = 1e-6
 EPS2 = 0.5
 
-STATUS_INIT = 0
-STATUS_STATIC = 1
-STATUS_DIRECTED = 2
+# STATUS_INIT = 0
+# STATUS_STATIC = 1
+# STATUS_DIRECTED = 2
 
+debug_frame = None
 
-def pt_dist(x1, y1, x2, y2):
-    dx = x1 - x2
-    dy = y1 - y2
-    return math.sqrt(dx * dx + dy * dy)
+class Status(Enum):
+    INIT = 0
+    STATIC = 1
+    DIRECTED = 2
+
+class Point:
+
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def get_coordinates_as_array(self):
+        return [self.x, self.y]
+
+    def get_coordinates_as_tuple(self):
+        return self.x, self.y
+
+    def __str__(self) -> str:
+        return f'{self.x}, {self.y}'
+
+    def __eq__(self, o) -> bool:
+        return self.x == o.x and self.y == o.y
 
 
 class Blob:
-    count = 1
 
-    def __init__(self, x, y, radius, age):
-        self.id = Blob.count
-        Blob.count += 1
-        self.points = [[x, y]]
-        self.point_properties = [[radius, age]]
-        self.status = STATUS_INIT
+    def __init__(self, point, age):
+        self.points = [point]
+        self.status = Status.INIT
         self.age = age
         self.nx = None
         self.ny = None
 
-    def fit(self, x, y):
+    def fit(self, point):
         # get the distance from the last added point (x and y) to another Point x and y
-        d = pt_dist(self.points[-1][0], self.points[-1][1], x, y)
-        return d < R, d
+        last_added_point = self.points[-1]
+        d = pt_dist(last_added_point, point)
+        # calculate reasonable distance that ball can travel
+        return d < 30, d
 
-    def add(self, x, y, r, a):
-        self.points.append([x, y])
-        self.point_properties.append([r, a])
+    def add(self, point, a):
+        if point not in self.points:
+            self.points.append(point)
         self.age = a
         if len(self.points) > 2:
             # if self.status == STATUS_DIRECTED and self.nx is not None:
             #  print("Predict", self.nx, self.ny, "vs", x, y)
 
-            dx1 = self.points[-2][0] - self.points[-3][0]
-            dy1 = self.points[-2][1] - self.points[-3][1]
+            second_last_point = self.points[-2]
+            third_last_point = self.points[-3]
+            dx1 = second_last_point.x - third_last_point.x
+            dy1 = second_last_point.y - third_last_point.y
 
-            dx2 = x - self.points[-2][0]
-            dy2 = y - self.points[-2][1]
+            dx2 = point.x - second_last_point.x
+            dy2 = point.y - second_last_point.y
 
-            d1 = pt_dist(self.points[-2][0], self.points[-2][1], x, y)
-            d2 = pt_dist(self.points[-2][0], self.points[-2][1], self.points[-3][0], self.points[-3][1])
+            d1 = pt_dist(second_last_point, point)
+            d2 = pt_dist(second_last_point, third_last_point)
+            # x and y coordinates go into the same direction
             if dx1 * dx2 > 0 and dy1 * dy2 > 0 and d1 > 5 and d2 > 5:
-                self.status = STATUS_DIRECTED
+                self.status = Status.DIRECTED
                 # print("Directed", self.pts)
                 # self.predict()
-            elif self.status != STATUS_DIRECTED:
-                self.status = STATUS_STATIC
+            elif self.status != Status.DIRECTED:
+                self.status = Status.STATIC
 
     def predict(self):
-        npts = np.array(self.points)
+        coordinate_array = map(lambda pt: pt.get_coordinates_as_array(), self.points)
+        npts = np.array(list(coordinate_array))
         l = len(self.points) + 1
         idx = np.array(range(1, l))
 
@@ -80,56 +100,68 @@ class Blob:
         return self.nx, self.ny
 
 
-Blobs = []
+existing_blobs: [Blob] = []
 ball_blob: Union[Blob, None] = None
 prev_ball_blob: Union[Blob, None] = None
+
+
+def pt_dist(point, other_point):
+    dx = point.x - other_point.x
+    dy = point.y - other_point.y
+    return math.sqrt(dx * dx + dy * dy)
 
 
 def get_ball_blob():
     return ball_blob
 
 
-def find_closest_existing_blob(center_x, center_y):
-    global Blobs, count
-    rbp = []
-    sbp = []
+def find_closest_blob_to_point(point) -> Union[Blob, None]:
+    global existing_blobs, count
+    related_blobs = []
+    static_blobs = []
 
-    for blob in Blobs:
-        # its fitting if the distance is below 60 (why 60?)
-        fit, distance = blob.fit(center_x, center_y)
+    for blob in existing_blobs:
+        fit, distance = blob.fit(point)
         if fit:
-            # new blob is not longer than 4 blobs away
-            if count - blob.age < 4:
-                rbp.append([blob, distance])
-            elif blob.status == STATUS_STATIC:
-                sbp.append([blob, distance])
+            # new blob is not older than 4 blobs
+            time_since_update = count - blob.age
+            if time_since_update < 4:
+                related_blobs.append([blob, distance])
+            # elif blob.status == STATUS_STATIC:
+            #     static_blobs.append([blob, distance])
+            # remove blob from existing ones
 
-    if len(sbp) + len(rbp) == 0:
+    if len(static_blobs) + len(related_blobs) == 0:
         return None
-    if len(rbp) > 0:
+    if len(related_blobs) > 0:
         # sort by distance
-        rbp.sort(key=lambda e: e[1])
+        related_blobs.sort(key=lambda e: e[1])
         # return blob with the lowest distance
-        return rbp[0][0]
-    else:
-        # sort by distance
-        sbp.sort(key=lambda e: e[1])
-        return sbp[0][0]
+        return related_blobs[0][0]
+    # else:
+    #     # sort by distance
+    #     static_blobs.sort(key=lambda e: e[1])
+    #     return static_blobs[0][0]
 
 
-def handle_blob(center_x, center_y, radius):
-    global Blobs, count, ball_blob
-    blob = find_closest_existing_blob(center_x, center_y)
+def handle_blob(center_x, center_y):
+    global existing_blobs, count, ball_blob
+    # TODO all points of a ball blob need to go into the same x-direction
+    # this should limit some weird tracking and make
+    point = Point(center_x, center_y)
+    blob = find_closest_blob_to_point(point)
     if blob is None:
-        Blobs.append(Blob(center_x, center_y, radius, count))
+        existing_blobs.append(
+            Blob(point, count))
         return
-    blob.add(center_x, center_y, radius, count)
-    if blob.status == STATUS_DIRECTED:
-        if not ball_blob:
-            ball_blob = blob
-        # if the current blob has more data its the new ball blob
-        elif len(blob.points) > len(ball_blob.points):
-            ball_blob = blob
+    if is_blob_current(blob):
+        blob.add(point, count)
+        if blob.status == Status.DIRECTED:
+            if not ball_blob:
+                ball_blob = blob
+            # if the current blob has more data its the new ball blob
+            elif len(blob.points) > len(ball_blob.points):
+                ball_blob = blob
 
 
 def begin_gen():
@@ -143,7 +175,16 @@ def end_gen():
     count += 1
 
 
+def is_blob_current(blob):
+    time_since_update = count - blob.age
+    return count <= 4 or time_since_update < 4 and blob.status is not Status.STATIC
+
+
 def handle_blobs(mask, frame):
+    global debug_frame, existing_blobs
+    debug_frame = frame
+    # cv.imshow('frame', frame)
+
     contours, _ = cv.findContours(mask, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
     # detect_blobs_in_mask(frame)
     begin_gen()
@@ -162,7 +203,7 @@ def handle_blobs(mask, frame):
 
         # cv.imshow("Cut-Blob", cut_blob_from_mask)
         # cv.imshow("Cut-Frame", cut_frame)
-
+        cv.imshow('mask', mask)
         if not is_valid_ball(cut_blob_from_mask, rectangle_height, rectangle_width):
             # cv.imshow("Cut-Blob", cut_blob_from_mask)
             # cv.imshow("Cut-Frame", cut_frame)
@@ -175,21 +216,15 @@ def handle_blobs(mask, frame):
         # why is this done here, whats the benefit?
         # so only the real detected blob is there not the noise from cutting?
         cut_c = cv.bitwise_and(cut_frame, cut_frame, mask=cut_blob_from_mask)
-        # cv.imshow("Cut-C", cut_c)
-        # cv.imshow("Cut-Blob", cut_blob_from_mask)
-        # cv.imshow("Cut-Frame", cut_frame)
-        # print("blob was allowed")
-        # cv.waitKey(0)
-
-
 
         # get data (coordinates) for the enclosing circle of the detected ball
         destroy_blobber_windows()
         ((x, y), radius) = cv.minEnclosingCircle(contour)
 
         # find out if the blob is directed with a previous blob and also add it to blob list
-        handle_blob(int(x), int(y), int(radius))
+        handle_blob(int(x), int(y))
 
+    existing_blobs = list(filter(is_blob_current, existing_blobs))
     end_gen()
 
 
@@ -212,6 +247,12 @@ def destroy_blobber_windows():
     if cv.getWindowProperty("Cut-C", cv.WND_PROP_VISIBLE) == 1.0:
         cv.destroyWindow("Cut-C")
 
+    # if cv.getWindowProperty("mask", cv.WND_PROP_VISIBLE) == 1.0:
+    #     cv.destroyWindow("mask")
+    #
+    # if cv.getWindowProperty("frame", cv.WND_PROP_VISIBLE) == 1.0:
+    #     cv.destroyWindow("frame")
+
 
 def is_valid_ball(blob, bounding_rect_height, bounding_rect_width):
     rectangle_shorter_side = min(bounding_rect_width, bounding_rect_height)
@@ -220,7 +261,7 @@ def is_valid_ball(blob, bounding_rect_height, bounding_rect_width):
     print(f'ratio: {rectangle_ratio}, short: {rectangle_shorter_side}, long: {rectangle_longer_side}')
 
     # actual ball sides are around 7-10
-    if rectangle_shorter_side < 5 or rectangle_longer_side > 13 or rectangle_ratio > 1.5:
+    if rectangle_shorter_side < 5 or rectangle_longer_side > 25 or rectangle_ratio > 1.75:
         print("blob sizes are wrong")
         # print(f'ratio: {rectangle_ratio}, short: {rectangle_shorter_side}, long: {rectangle_longer_side}')
         return False
@@ -271,6 +312,7 @@ def is_contour_a_circle(contour):
     circularity = 4*math.pi*(area/(perimeter*perimeter))
     print(f'circularity: {circularity}')
     return circularity >= 0.85
+
 
 def detect_blobs_in_mask(mask):
     detector = cv.SimpleBlobDetector_create()
@@ -324,16 +366,17 @@ def check_blob(blob, width, height):
 def draw_ball(pic):
     ball = get_ball_blob()
     if ball is not None:
-        cv.circle(pic, (ball.points[-1][0], ball.points[-1][1]), 10, (0, 200, 0), 3)
-    else:
-        if prev_ball_blob is not None:
-            x, y = prev_ball_blob.predict()
-            cv.circle(pic, (int(x), int(y)), 10, (0, 200, 0), 3)
+        last_point_of_ball = ball.points[-1]
+        cv.circle(pic, (last_point_of_ball.x, last_point_of_ball.y), 10, (0, 200, 0), 3)
+    elif prev_ball_blob is not None:
+        x, y = prev_ball_blob.predict()
+        cv.circle(pic, (int(x), int(y)), 10, (0, 200, 0), 3)
 
 
 found_points = []
 def draw_ball_path(pic):
     ball = get_ball_blob()
+    # TODO cut out flight curve with wrong red dots in curve and debug this
     # try detection with vectors and their direction (so 4 points)
     if ball is not None:
         # points_iterator = iter(ball.points)
@@ -342,21 +385,40 @@ def draw_ball_path(pic):
         for index, point_to_draw in enumerate(points):
             # point_to_draw = ball.points[index]
             next_four_points = ball.points[index:index+sub_points_size]
+
+
             # print(f'current point: {point_to_draw}')
             # print(f'next four points {next_four_points}')
             # next_two_points = list(itertools.islice(points_iterator, 2))
+            cv.circle(pic, point_to_draw.get_coordinates_as_tuple(), 3, (150, 150, 150), -1)
             if len(next_four_points) == 4:
+                # debug_pic = pic.copy()
+                # for debug_point in next_four_points:
+                #     cv.circle(debug_pic, debug_point.get_coordinates_as_tuple(), 4, (212, 25, 0), -1, lineType=cv.LINE_4)
+                # cv.imshow("bounce", debug_pic)
                 intersection = get_intersect(next_four_points[0], next_four_points[1], next_four_points[2], next_four_points[3])
-                y_coordinates = map(lambda point: point[1], next_four_points)
-                intersection_y = intersection[1]
-
-                if (intersection_y < float('inf')) and all(i <= intersection_y for i in y_coordinates):
-                    # print(f'lowest point found: {intersection}')
-                    cv.circle(pic, (intersection[0], intersection_y), 3, (0, 0, 255), -1)
-            cv.circle(pic, (point_to_draw[0], point_to_draw[1]), 3, (150, 150, 150), -1)
+                if is_valid_intersection(intersection, next_four_points):
+                    print(f'lowest point found: {intersection}')
+                    cv.circle(pic, intersection.get_coordinates_as_tuple(), 3, (0, 0, 255), -1)
 
 
-def get_intersect(a1, a2, b1, b2):
+def is_valid_intersection(intersection, next_four_points):
+    # y_coordinates = map(lambda point: point.y, next_four_points)
+    y_coordinates = [point.y for point in next_four_points]
+    ends = [next_four_points[i] for i in [0, -1]]
+    x_coord_of_ends = [point.x for point in ends]
+    is_between = min(x_coord_of_ends) <= intersection.x <= max(x_coord_of_ends)
+    # intersection x-coord needs to be between the first and last point to be an accurate bounce
+
+    return (intersection.y < float('inf')) and all(y <= intersection.y for y in y_coordinates) and is_between
+
+
+def get_intersect(pt_a1, pt_a2, pt_b1, pt_b2):
+    coord_a1 = pt_a1.get_coordinates_as_array()
+    coord_a2 = pt_a2.get_coordinates_as_array()
+    coord_b1 = pt_b1.get_coordinates_as_array()
+    coord_b2 = pt_b2.get_coordinates_as_array()
+
     """
     Returns the point of intersection of the lines passing through a2,a1 and b2,b1.
     a1: [x, y] a point on the first line
@@ -364,23 +426,24 @@ def get_intersect(a1, a2, b1, b2):
     b1: [x, y] a point on the second line
     b2: [x, y] another point on the second line
     """
-    s = np.vstack([a1,a2,b1,b2])        # s for stacked
+
+    s = np.vstack([coord_a1, coord_a2, coord_b1, coord_b2])        # s for stacked
     h = np.hstack((s, np.ones((4, 1)))) # h for homogeneous
     l1 = np.cross(h[0], h[1])           # get first line
     l2 = np.cross(h[2], h[3])           # get second line
     x, y, z = np.cross(l1, l2)          # point of intersection
     if z == 0:                          # lines are parallel
-        return (float('inf'), float('inf'))
-    return (int(x/z), int(y/z))
+        return Point(float('inf'), float('inf'))
+    return Point(int(x/z), int(y/z))
 
 
 def draw_blobs(w, h):
     pic = np.zeros((h, w, 3), np.uint8)
-    for b in Blobs:
+    for b in existing_blobs:
         clr = (200, 200, 200)
-        if b.status == STATUS_STATIC:
+        if b.status == Status.STATIC:
             clr = (0, 200, 0)
-        elif b.status == STATUS_DIRECTED:
+        elif b.status == Status.DIRECTED:
             clr = (200, 0, 0)
             # if b.v is not None:
             #     cv.line(pic, (b.points[0][0], b.points[0][1]), (b.points[-1][0], b.points[-1][1]), (255, 0, 0), 1)

@@ -7,17 +7,20 @@ import numpy as np
 def get_coordinates(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:
         print(f'X-Coord: {x}, Y-Coord: {y}')
-        param.append([float(x), float(y), 0.])
+        param.append([x, y])
+        # param.append([float(x), float(y), 0.])
 
 
-def get_vertices():
+def get_vertices(real_path, top_path):
     real_vertices = []
-    real_img = cv2.imread('resources/court-top-ball.png')
+    real_img = cv2.imread(real_path)
+    # real_img = cv2.imread('resources/calibration/hd-marked.jpg')
     cv2.namedWindow('real', cv2.WINDOW_NORMAL)
     cv2.setMouseCallback('real', get_coordinates, real_vertices)
 
     top_vertices = []
-    top_img = cv2.imread('resources/perspective.png')
+    top_img = cv2.imread(top_path)
+    # top_img = cv2.imread('resources/calibration/court-top.png')
     cv2.namedWindow('top', cv2.WINDOW_NORMAL)
     cv2.setMouseCallback('top', get_coordinates, top_vertices)
 
@@ -48,6 +51,8 @@ def get_transformation_matrix(real_vertices, top_vertices):
     # to find our transformation matrix A
     A, res, rank, s = np.linalg.lstsq(X, Y)
 
+    A[np.abs(A) < 1e-10] = 0  # set really small values to zero
+
     transform = lambda x: unpad(np.dot(pad(x), A))
 
     primary_transformed = transform(primary)
@@ -55,30 +60,42 @@ def get_transformation_matrix(real_vertices, top_vertices):
 
     print(f'transformation-matrix:\n{A}')
 
-    A[np.abs(A) < 1e-10] = 0  # set really small values to zero
     print(f'transformation-matrix with zeroes:\n{A}')
 
     print(f'Target:\n{secondary}')
-    # 7541, 447
-    ball_coord = np.array([[0., 0., 0.],
-                            [0., 447., 0.],
-                            [7541., 0., 0.],
-                            [7541., 447., 0.]])
-
-    ball_transf = transform(ball_coord)
-    print(f'ball_transformed: \n{ball_transf}')
     print(f'Result:\n{primary_transformed}')
     print(f'Max error:\n{max_error}')
 
 
+def get_opencv_transformation_matrix(real_vertices, top_vertices):
+    primary = np.float32(real_vertices)
+    secondary = np.float32(top_vertices)
+
+    matrix = cv2.getAffineTransform(primary, secondary)
+
+    fst_prim_pt = np.float32([primary[0]])
+    custom_point = np.float32([[127, 388]])
+    primary_transformed = cv2.transform(np.array([custom_point]), matrix)[0]
+
+    print(f'transformation-matrix:\n{matrix}')
+
+    print(f'Target:\n{secondary}')
+    print(f'Result:\n{primary_transformed}')
+
+
 if __name__ == "__main__":
     get_actual_values = sys.argv[1]
-    if get_actual_values == '1':
-        real_vertices, top_vertices = get_vertices()
+    if get_actual_values == 'pic':
+        real_pic_path = sys.argv[2]
+        top_pic_path = sys.argv[3]
+        real_vertices, top_vertices = get_vertices(real_pic_path, top_pic_path)
     else:
 
-        # order is top-left, bottom-left, top-right, bottom-right
-        real_vertices = [[1077., 2662., 0.], [142., 2870., 0.], [4409., 2676., 0.], [5378., 2870., 0.]]
-        top_vertices = [[504., 363., 0.], [500., 4208., 0.], [7617., 363., 0.], [7617., 4204., 0.]]
-    get_transformation_matrix(real_vertices, top_vertices)
+        # order is top-left, bottom-left, top-right
+        real_vertices = [[199, 376], [30, 401], [763, 380]]
+        # real_vertices = [[1133.0, 2137.0, 0.0], [178.0, 2282.0, 0.0], [4351.0, 2163.0, 0.0], [5300.0, 2319.0, 0.0]]
+        top_vertices = [[508, 358], [508, 4208], [7621, 363]]
+        # top_vertices = [[508.0, 358.0, 0.0], [508.0, 4208.0, 0.0], [7621.0, 363.0, 0.0], [7617.0, 4204.0, 0.0]]
+    # get_transformation_matrix(real_vertices, top_vertices)
+    get_opencv_transformation_matrix(real_vertices, top_vertices)
 
