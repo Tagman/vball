@@ -398,7 +398,7 @@ def draw_ball_path(pic):
                 # cv.imshow("bounce", debug_pic)
                 intersection = get_intersect(next_four_points[0], next_four_points[1], next_four_points[2], next_four_points[3])
                 if is_valid_intersection(intersection, next_four_points):
-                    # print(f'lowest point found: {intersection}')
+                    print(f'lowest point found: {intersection}')
                     cv.circle(pic, intersection.get_coordinates_as_tuple(), 3, (0, 0, 255), -1)
 
 
