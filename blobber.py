@@ -31,6 +31,15 @@ class Point:
     def get_coordinates_as_array(self):
         return [self.x, self.y]
 
+    def get_coordinates_as_tuple(self):
+        return self.x, self.y
+
+    def __str__(self) -> str:
+        return f'{self.x}, {self.y}'
+
+    def __eq__(self, o) -> bool:
+        return self.x == o.x and self.y == o.y
+
 
 class Blob:
 
@@ -49,7 +58,8 @@ class Blob:
         return d < 30, d
 
     def add(self, point, a):
-        self.points.append(point)
+        if point not in self.points:
+            self.points.append(point)
         self.age = a
         if len(self.points) > 2:
             # if self.status == STATUS_DIRECTED and self.nx is not None:
@@ -358,10 +368,9 @@ def draw_ball(pic):
     if ball is not None:
         last_point_of_ball = ball.points[-1]
         cv.circle(pic, (last_point_of_ball.x, last_point_of_ball.y), 10, (0, 200, 0), 3)
-    else:
-        if prev_ball_blob is not None:
-            x, y = prev_ball_blob.predict()
-            cv.circle(pic, (int(x), int(y)), 10, (0, 200, 0), 3)
+    elif prev_ball_blob is not None:
+        x, y = prev_ball_blob.predict()
+        cv.circle(pic, (int(x), int(y)), 10, (0, 200, 0), 3)
 
 
 found_points = []
@@ -376,17 +385,32 @@ def draw_ball_path(pic):
         for index, point_to_draw in enumerate(points):
             # point_to_draw = ball.points[index]
             next_four_points = ball.points[index:index+sub_points_size]
+
+
             # print(f'current point: {point_to_draw}')
             # print(f'next four points {next_four_points}')
             # next_two_points = list(itertools.islice(points_iterator, 2))
-            cv.circle(pic, (point_to_draw.x, point_to_draw.y), 3, (150, 150, 150), -1)
+            cv.circle(pic, point_to_draw.get_coordinates_as_tuple(), 3, (150, 150, 150), -1)
             if len(next_four_points) == 4:
-                intersect_x, intersect_y = get_intersect(next_four_points[0], next_four_points[1], next_four_points[2], next_four_points[3])
-                y_coordinates = map(lambda point: point.y, next_four_points)
-
-                if (intersect_y < float('inf')) and all(y <= intersect_y for y in y_coordinates):
+                # debug_pic = pic.copy()
+                # for debug_point in next_four_points:
+                #     cv.circle(debug_pic, debug_point.get_coordinates_as_tuple(), 4, (212, 25, 0), -1, lineType=cv.LINE_4)
+                # cv.imshow("bounce", debug_pic)
+                intersection = get_intersect(next_four_points[0], next_four_points[1], next_four_points[2], next_four_points[3])
+                if is_valid_intersection(intersection, next_four_points):
                     # print(f'lowest point found: {intersection}')
-                    cv.circle(pic, (intersect_x, intersect_y), 3, (0, 0, 255), -1)
+                    cv.circle(pic, intersection.get_coordinates_as_tuple(), 3, (0, 0, 255), -1)
+
+
+def is_valid_intersection(intersection, next_four_points):
+    # y_coordinates = map(lambda point: point.y, next_four_points)
+    y_coordinates = [point.y for point in next_four_points]
+    ends = [next_four_points[i] for i in [0, -1]]
+    x_coord_of_ends = [point.x for point in ends]
+    is_between = min(x_coord_of_ends) <= intersection.x <= max(x_coord_of_ends)
+    # intersection x-coord needs to be between the first and last point to be an accurate bounce
+
+    return (intersection.y < float('inf')) and all(y <= intersection.y for y in y_coordinates) and is_between
 
 
 def get_intersect(pt_a1, pt_a2, pt_b1, pt_b2):
@@ -409,8 +433,8 @@ def get_intersect(pt_a1, pt_a2, pt_b1, pt_b2):
     l2 = np.cross(h[2], h[3])           # get second line
     x, y, z = np.cross(l1, l2)          # point of intersection
     if z == 0:                          # lines are parallel
-        return (float('inf'), float('inf'))
-    return (int(x/z), int(y/z))
+        return Point(float('inf'), float('inf'))
+    return Point(int(x/z), int(y/z))
 
 
 def draw_blobs(w, h):

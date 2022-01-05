@@ -118,6 +118,9 @@ def destroy_main_windows():
     if cv2.getWindowProperty("frame", cv2.WND_PROP_VISIBLE) == 1.0:
         cv2.destroyWindow("frame")
 
+    if cv2.getWindowProperty("bounce", cv2.WND_PROP_VISIBLE) == 1.0:
+        cv2.destroyWindow("bounce")
+
 
 if __name__ == "__main__":
     type_of_source = sys.argv[1]
