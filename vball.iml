@@ -9,6 +9,9 @@
       <excludeFolder url="file://$MODULE_DIR$/train_color" />
       <excludeFolder url="file://$MODULE_DIR$/train_masks" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
+      <excludeFolder url="file://$MODULE_DIR$/ball-net/train/b" />
+      <excludeFolder url="file://$MODULE_DIR$/ball-net/train/n" />
+      <excludeFolder url="file://$MODULE_DIR$/logs" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

@@ -5,6 +5,7 @@ train_masks
 ball-net/train/**
 masks
 venv
+logs
 
 
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
