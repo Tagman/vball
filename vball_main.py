@@ -6,6 +6,7 @@ import cv2
 
 import blobber
 import cvlog as log
+import calibration
 
 frame_queue = queue.Queue()
 
@@ -27,8 +28,8 @@ def read_frames_into_queue(path):
 def process_frames_from_queue():
 
     # open the logging file
-
-
+    coordinates_file = sys.argv[2]
+    calibration.initialise(coordinates_file)
     # run as long as frames are in queue
     print("start processing")
     background_subtraction = cv2.createBackgroundSubtractorMOG2()
@@ -123,23 +124,12 @@ def destroy_main_windows():
 
 
 if __name__ == "__main__":
-    type_of_source = sys.argv[1]
+    source = sys.argv[1]
 
-    if type_of_source == "debug":
-        name_of_debug_source = sys.argv[2]
-        frame_name = name_of_debug_source + "_frame.jpg"
-        mask_name = name_of_debug_source + "_mask.jpg"
-
-        input_frame = cv2.imread(frame_name)
-        input_mask = cv2.imread(mask_name)
-        debug_blobs(input_frame, input_mask)
-
-    elif type_of_source == "vid":
-        source = sys.argv[2]
-        reading_thread = threading.Thread(target=read_frames_into_queue, args=(source,))
-        # start processing thread after 2 seconds, so queue has time to fill up
-        processing_thread = threading.Timer(5, process_frames_from_queue)
-        reading_thread.start()
-        processing_thread.start()
-        # read_frames_into_queue(video_source)
-        # process_frames_from_queue()
+    reading_thread = threading.Thread(target=read_frames_into_queue, args=(source,))
+    # start processing thread after 2 seconds, so queue has time to fill up
+    processing_thread = threading.Timer(5, process_frames_from_queue)
+    reading_thread.start()
+    processing_thread.start()
+    # read_frames_into_queue(video_source)
+    # process_frames_from_queue()

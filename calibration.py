@@ -1,8 +1,11 @@
+import json
 import sys
 
 import cv2
 import numpy as np
 
+
+matrix = None
 
 def get_coordinates(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:
@@ -36,51 +39,30 @@ def get_vertices(real_path, top_path):
     return real_vertices, top_vertices
 
 
-def get_transformation_matrix(real_vertices, top_vertices):
-    primary = np.array(real_vertices)
-    secondary = np.array(top_vertices)
-
-    # Pad the data with ones, so that our transformation can do translations too
-    n = primary.shape[0]
-    pad = lambda x: np.hstack([x, np.ones((x.shape[0], 1))])
-    unpad = lambda x: x[:,:-1]
-    X = pad(primary)
-    Y = pad(secondary)
-
-    # Solve the least squares problem X * A = Y
-    # to find our transformation matrix A
-    A, res, rank, s = np.linalg.lstsq(X, Y)
-
-    A[np.abs(A) < 1e-10] = 0  # set really small values to zero
-
-    transform = lambda x: unpad(np.dot(pad(x), A))
-
-    primary_transformed = transform(primary)
-    max_error = np.abs(secondary - primary_transformed).max()
-
-    print(f'transformation-matrix:\n{A}')
-
-    print(f'transformation-matrix with zeroes:\n{A}')
-
-    print(f'Target:\n{secondary}')
-    print(f'Result:\n{primary_transformed}')
-    print(f'Max error:\n{max_error}')
-
-
-def get_opencv_transformation_matrix(real_vertices, top_vertices):
-    primary = np.float32(real_vertices)
-    secondary = np.float32(top_vertices)
+def get_transformation_matrix(source_points, target_points):
+    global matrix
+    primary = np.float32(source_points)
+    secondary = np.float32(target_points)
 
     matrix = cv2.getAffineTransform(primary, secondary)
 
-    fst_prim_pt = np.float32([primary[0]])
-    custom_point = np.float32([[127, 388]])
-    primary_transformed = cv2.transform(np.array([custom_point]), matrix)[0]
-
     print(f'transformation-matrix:\n{matrix}')
 
-    print(f'Target:\n{secondary}')
-    print(f'Result:\n{primary_transformed}')
+
+def initialise(coordinates_file_path):
+    with open(coordinates_file_path) as coordinates_file:
+        coordinates = json.load(coordinates_file)
+
+    source_coordinates = coordinates['source']
+    target_coordinates = coordinates['target']
+
+    get_transformation_matrix(source_coordinates, target_coordinates)
+
+
+def transform(point):
+    source_point = np.float32([point])
+    transformed_point = cv2.transform(np.array([source_point]), matrix)[0]
+    return transformed_point[0]
 
 
 if __name__ == "__main__":
@@ -90,12 +72,11 @@ if __name__ == "__main__":
         top_pic_path = sys.argv[3]
         real_vertices, top_vertices = get_vertices(real_pic_path, top_pic_path)
     else:
-
         # order is top-left, bottom-left, top-right
         real_vertices = [[199, 376], [30, 401], [763, 380]]
         # real_vertices = [[1133.0, 2137.0, 0.0], [178.0, 2282.0, 0.0], [4351.0, 2163.0, 0.0], [5300.0, 2319.0, 0.0]]
         top_vertices = [[508, 358], [508, 4208], [7621, 363]]
         # top_vertices = [[508.0, 358.0, 0.0], [508.0, 4208.0, 0.0], [7621.0, 363.0, 0.0], [7617.0, 4204.0, 0.0]]
     # get_transformation_matrix(real_vertices, top_vertices)
-    get_opencv_transformation_matrix(real_vertices, top_vertices)
+    get_transformation_matrix(real_vertices, top_vertices)
 

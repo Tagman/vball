@@ -7,6 +7,8 @@ import numpy as np
 # import ball_net as bn
 import sys
 
+import calibration
+
 count = 0
 EPS = 1e-6
 EPS2 = 0.5
@@ -376,20 +378,13 @@ def draw_ball(pic):
 found_points = []
 def draw_ball_path(pic):
     ball = get_ball_blob()
-    # TODO cut out flight curve with wrong red dots in curve and debug this
     # try detection with vectors and their direction (so 4 points)
     if ball is not None:
-        # points_iterator = iter(ball.points)
         sub_points_size = 4
         points = ball.points
         for index, point_to_draw in enumerate(points):
-            # point_to_draw = ball.points[index]
             next_four_points = ball.points[index:index+sub_points_size]
 
-
-            # print(f'current point: {point_to_draw}')
-            # print(f'next four points {next_four_points}')
-            # next_two_points = list(itertools.islice(points_iterator, 2))
             cv.circle(pic, point_to_draw.get_coordinates_as_tuple(), 3, (150, 150, 150), -1)
             if len(next_four_points) == 4:
                 # debug_pic = pic.copy()
@@ -398,8 +393,18 @@ def draw_ball_path(pic):
                 # cv.imshow("bounce", debug_pic)
                 intersection = get_intersect(next_four_points[0], next_four_points[1], next_four_points[2], next_four_points[3])
                 if is_valid_intersection(intersection, next_four_points):
-                    print(f'lowest point found: {intersection}')
-                    cv.circle(pic, intersection.get_coordinates_as_tuple(), 3, (0, 0, 255), -1)
+                    # TODO remove unnecessary double calculations
+                    # right now the whole flight path is evaluated each time, maybe do these calculations when adding points
+                    # and save the color or type of the point. so this method is just drawing them
+                    # transform coordinates
+                    coordinates_top_view = calibration.transform(intersection.get_coordinates_as_array())
+                    # only when intersection lies in the 1 quadrant of the transformed coordinate system
+                    # then it's a valid bounce
+                    if np.all((coordinates_top_view >= 0)):
+                        print(f'lowest point found: {intersection}')
+                        # TODO draw impacts points on top-down view in real-time
+                        cv.circle(pic, intersection.get_coordinates_as_tuple(), 3, (0, 0, 255), -1)
+
 
 
 def is_valid_intersection(intersection, next_four_points):
