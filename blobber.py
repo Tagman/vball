@@ -205,7 +205,7 @@ def handle_blobs(mask, frame):
 
         # cv.imshow("Cut-Blob", cut_blob_from_mask)
         # cv.imshow("Cut-Frame", cut_frame)
-        cv.imshow('mask', mask)
+        # cv.imshow('mask', mask)
         if not is_valid_ball(cut_blob_from_mask, rectangle_height, rectangle_width):
             # cv.imshow("Cut-Blob", cut_blob_from_mask)
             # cv.imshow("Cut-Frame", cut_frame)
@@ -376,7 +376,14 @@ def draw_ball(pic):
 
 
 found_points = []
-def draw_ball_path(pic):
+
+
+def make_coordinates_drawable(coordinate_array):
+    int_coordinates = coordinate_array.astype(int)
+    return int_coordinates[0], int_coordinates[1]
+
+
+def draw_ball_path(side_view, top_view):
     ball = get_ball_blob()
     # try detection with vectors and their direction (so 4 points)
     if ball is not None:
@@ -385,7 +392,7 @@ def draw_ball_path(pic):
         for index, point_to_draw in enumerate(points):
             next_four_points = ball.points[index:index+sub_points_size]
 
-            cv.circle(pic, point_to_draw.get_coordinates_as_tuple(), 3, (150, 150, 150), -1)
+            cv.circle(side_view, point_to_draw.get_coordinates_as_tuple(), 3, (150, 150, 150), -1)
             if len(next_four_points) == 4:
                 # debug_pic = pic.copy()
                 # for debug_point in next_four_points:
@@ -402,9 +409,10 @@ def draw_ball_path(pic):
                     # then it's a valid bounce
                     if np.all((coordinates_top_view >= 0)):
                         print(f'lowest point found: {intersection}')
+                        drawable_top_coords = make_coordinates_drawable(coordinates_top_view)
                         # TODO draw impacts points on top-down view in real-time
-                        cv.circle(pic, intersection.get_coordinates_as_tuple(), 3, (0, 0, 255), -1)
-
+                        cv.circle(side_view, intersection.get_coordinates_as_tuple(), 3, (0, 0, 255), -1)
+                        cv.circle(top_view, drawable_top_coords, 3, (0, 0, 255), -1)
 
 
 def is_valid_intersection(intersection, next_four_points):

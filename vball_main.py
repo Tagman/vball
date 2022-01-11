@@ -30,11 +30,14 @@ def process_frames_from_queue():
     # open the logging file
     coordinates_file = sys.argv[2]
     calibration.initialise(coordinates_file)
+    top_view = cv2.imread('resources/calibration/court-top-960.png')
     # run as long as frames are in queue
     print("start processing")
     background_subtraction = cv2.createBackgroundSubtractorMOG2()
     # frame_writer = cv2.VideoWriter('traced.avi', cv2.VideoWriter_fourcc(*'DIVX'), 30, (640, 340))
     # mask_writer = cv2.VideoWriter('mask.avi', cv2.VideoWriter_fourcc(*'DIVX'), 30, (640, 340))
+    cv2.imshow('top_view', top_view)
+
     while not frame_queue.empty():
         # ret, frame = vs.read()
         # get frame from queue
@@ -50,10 +53,11 @@ def process_frames_from_queue():
 
         # fit circle
         blobber.handle_blobs(mask, frame)
-        blobber.draw_ball_path(frame)
+        blobber.draw_ball_path(frame, top_view)
         blobber.draw_ball(frame)
         log.image(log.Level.TRACE, frame)
-        cv2.imshow('result', frame)
+        cv2.imshow('side_view', frame)
+        cv2.imshow('top_view', top_view)
         # cv2.waitKey(0)
 
         # frame_writer.write(frame)
@@ -97,15 +101,12 @@ def preprocess_frame(frame, back_sub):
     return thresholded, frame
 
 
-def debug_blobs(frame, mask):
-    blobber.handle_blobs(mask, frame)
-    blobber.draw_ball_path(frame)
-    blobber.draw_ball(frame)
-
-
 def destroy_main_windows():
     if cv2.getWindowProperty("result", cv2.WND_PROP_VISIBLE) == 1.0:
         cv2.destroyWindow("result")
+
+    if cv2.getWindowProperty("top_view", cv2.WND_PROP_VISIBLE) == 1.0:
+        cv2.destroyWindow("top_view")
 
     if cv2.getWindowProperty("threshold", cv2.WND_PROP_VISIBLE) == 1.0:
         cv2.destroyWindow("threshold")

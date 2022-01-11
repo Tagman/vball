@@ -73,9 +73,9 @@ if __name__ == "__main__":
         real_vertices, top_vertices = get_vertices(real_pic_path, top_pic_path)
     else:
         # order is top-left, bottom-left, top-right
-        real_vertices = [[199, 376], [30, 401], [763, 380]]
+        real_vertices = [[199, 376], [30, 401], [930, 407]]
         # real_vertices = [[1133.0, 2137.0, 0.0], [178.0, 2282.0, 0.0], [4351.0, 2163.0, 0.0], [5300.0, 2319.0, 0.0]]
-        top_vertices = [[508, 358], [508, 4208], [7621, 363]]
+        top_vertices = [[60, 43], [61, 504], [914, 504]]
         # top_vertices = [[508.0, 358.0, 0.0], [508.0, 4208.0, 0.0], [7621.0, 363.0, 0.0], [7617.0, 4204.0, 0.0]]
     # get_transformation_matrix(real_vertices, top_vertices)
     get_transformation_matrix(real_vertices, top_vertices)
