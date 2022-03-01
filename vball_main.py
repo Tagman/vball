@@ -102,8 +102,8 @@ def preprocess_frame(frame, back_sub):
 
 
 def destroy_main_windows():
-    if cv2.getWindowProperty("result", cv2.WND_PROP_VISIBLE) == 1.0:
-        cv2.destroyWindow("result")
+    if cv2.getWindowProperty("side_view", cv2.WND_PROP_VISIBLE) == 1.0:
+        cv2.destroyWindow("side_view")
 
     if cv2.getWindowProperty("top_view", cv2.WND_PROP_VISIBLE) == 1.0:
         cv2.destroyWindow("top_view")
